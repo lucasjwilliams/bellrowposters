@@ -295,6 +295,7 @@ button.link { border: none; background: none; color: var(--accent); padding: 8px
 .p-row + .p-row:not(:nth-child(2)) { border-top: 1px solid var(--main); }
 .p-row.band { background: var(--light); }
 .p-row > div { padding: 0 10px; overflow: hidden; }
+.p-head > div { white-space: nowrap; }
 .p-head { background: var(--main); color: #fff; font-weight: 700; font-size: 22px; }
 .p-name { font-weight: 700; text-align: left; padding-left: 22px !important; }
 .p-head .p-name { font-weight: 700; }

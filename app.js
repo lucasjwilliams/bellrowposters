@@ -11,7 +11,6 @@ const VERSION = CHANGELOG[0].version;
 
 const PLACES = '1234567890ET';
 const STAGES = [5, 6, 7, 8, 10, 12];
-const STAGE_NAMES = { 5: 'Five', 6: 'Six', 7: 'Seven', 8: 'Eight', 10: 'Ten', 12: 'Twelve' };
 
 const THEMES = [
   { name: 'Navy', main: '#1f3a68', light: '#dfe7f3' },
@@ -23,13 +22,32 @@ const THEMES = [
 
 const bells = (n) => Array.from({ length: n }, (_, i) => i + 1);
 const asRow = (list) => list.map((b) => PLACES[b - 1]).join('');
-const even = (rule) => (n) => (n % 2 ? '' : rule(n));
+
+const odds = (n) => bells(n).filter((b) => b % 2);
+const evens = (n) => bells(n).filter((b) => !(b % 2));
+
+function crossJoin(front, back) {
+  const list = [...front, ...back];
+  const k = front.length;
+  [list[k - 1], list[k]] = [list[k], list[k - 1]];
+  return asRow(list);
+}
+
+function jacks(n) {
+  const pairs = [];
+  for (let b = 2; b < n; b += 2) pairs.unshift(bells(n - 1).slice(b - 1, b + 1));
+  return asRow([1, ...pairs.flat(), n]);
+}
 
 const RULES = {
   rounds: (n) => asRow(bells(n)),
-  queens: (n) => asRow([...bells(n).filter((b) => b % 2), ...bells(n).filter((b) => !(b % 2))]),
-  kings: even((n) => asRow([...bells(n).filter((b) => b % 2).reverse(), ...bells(n).filter((b) => !(b % 2))])),
-  tittums: even((n) => asRow(bells(n / 2).flatMap((b) => [b, b + n / 2]))),
+  queens: (n) => asRow([...odds(n), ...evens(n)]),
+  kings: (n) => asRow([...odds(n).reverse(), ...evens(n)]),
+  princes: (n) => crossJoin(odds(n).reverse(), evens(n)),
+  princesses: (n) => crossJoin(odds(n), evens(n)),
+  jokers: (n) => asRow([1, ...bells(n - 1).slice(1).reverse(), n]),
+  jacks,
+  tittums: (n) => { const h = Math.ceil(n / 2); return asRow(bells(h).flatMap((b) => (b + h <= n ? [b, b + h] : [b]))); },
   backRounds: (n) => asRow([...bells(n - 1).reverse(), n]),
 };
 
@@ -37,20 +55,18 @@ const LIBRARY = [
   { name: 'Rounds', rule: 'rounds', on: true },
   { name: 'Queens', rule: 'queens', on: true },
   { name: 'Kings', rule: 'kings', on: true },
-  { name: 'Whittingtons', values: { 6: '125346', 8: '12753468' }, on: true },
+  { name: 'Whittingtons', values: { 5: '12534', 6: '125346', 7: '1275346', 8: '12753468', 10: '1297534680', 12: '12E97534680T' }, on: true },
   { name: 'Tittums', rule: 'tittums', on: true },
-  { name: 'Exploded Tittums', values: { 6: '342516', 8: '45362718' }, on: true },
-  { name: 'Hagdyke', values: { 6: '341256', 8: '12563478' }, on: true },
-  { name: 'Princes', values: { 6: '532146', 8: '75321468' } },
-  { name: 'Princesses', values: { 8: '13527468' } },
-  { name: 'Jokers', values: { 6: '154326', 8: '17654328' } },
-  { name: 'Jacks', values: { 6: '145236', 8: '16745238' } },
-  { name: 'Kennett', values: { 6: '153426' } },
-  { name: 'Burdette', values: { 6: '213546', 8: '31247568' } },
-  { name: 'Bow Bells', values: { 8: '13245768' } },
-  { name: "St Michael's", values: { 8: '17652438' } },
-  { name: 'See-saw', values: { 6: '321456', 8: '43215678' } },
+  { name: 'Exploding Tittums', values: { 5: '34251', 6: '342516', 7: '4536271', 8: '45362718', 10: '5647382910', 12: '675849302E1T' }, on: true },
+  { name: 'Hagdyke', values: { 5: '34125', 6: '341256', 7: '1256347', 8: '12563478', 10: '5612783490', 12: '1278349056ET' }, on: true },
+  { name: 'Rollercoaster', values: { 5: '32145', 6: '321654', 7: '3214765', 8: '32147658', 10: '3216549870', 12: '32147658E09T' }, on: true },
+  { name: 'See-saw', values: { 5: '32145', 6: '321456', 7: '4321567', 8: '43215678', 10: '5432167890', 12: '6543217890ET' }, on: true },
+  { name: 'Wrap', values: { 5: '32154', 6: '321654', 7: '3217654', 8: '43218765', 10: '5432109876', 12: '654321TE0987' }, on: true },
   { name: 'Back rounds', rule: 'backRounds', on: true },
+  { name: 'Princes', rule: 'princes' },
+  { name: 'Princesses', rule: 'princesses' },
+  { name: 'Jokers', rule: 'jokers' },
+  { name: 'Jacks', rule: 'jacks' },
 ];
 
 function libraryValues(entry) {
@@ -267,7 +283,7 @@ function posterPage(rows, stages, first, startIndex) {
       ${state.subtitle ? `<p class="p-subtitle">${escapeHtml(state.subtitle)}</p>` : ''}` : ''}
       <div class="p-table">
         ${head ? `<div class="p-row p-head">
-          <div class="p-name">Name</div>${stages.map((n) => `<div>${STAGE_NAMES[n]} bells</div>`).join('')}
+          <div class="p-name">Name</div>${stages.map((n) => `<div>${n} bells</div>`).join('')}
         </div>` : ''}
         ${rows.map((row, i) => `
           <div class="p-row ${(startIndex + i) % 2 ? 'band' : ''}">
@@ -277,20 +293,23 @@ function posterPage(rows, stages, first, startIndex) {
               : '<div class="p-value none">–</div>')).join('')}
           </div>`).join('')}
       </div>
-      <p class="p-credit">Named Row Posters</p>
+      <p class="p-credit">Named Row Posters | rows.lucasw.uk</p>
     </div>`;
 }
 
 function fitPosterText() {
-  document.querySelectorAll('#posters .p-row').forEach((row) => {
-    const h = row.clientHeight;
-    row.querySelectorAll(':scope > div').forEach((cell) => {
-      let size = parseFloat(getComputedStyle(cell).fontSize);
-      for (let i = 0; i < 30 && size > 8 && (cell.scrollHeight > h || cell.scrollWidth > cell.clientWidth + 1); i++) {
-        size -= 1;
-        cell.style.fontSize = `${size}px`;
-      }
-    });
+  document.querySelectorAll('#posters .p-row > div').forEach((cell) => { cell.style.fontSize = ''; });
+  const overflows = (cell) => cell.scrollHeight > cell.parentElement.clientHeight || cell.scrollWidth > cell.clientWidth + 1;
+  ['.p-head > div', '.p-row:not(.p-head) > .p-name', '.p-row:not(.p-head) > .p-value'].forEach((selector) => {
+    const cells = [...document.querySelectorAll(`#posters ${selector}`)];
+    if (!cells.length) return;
+    let size = Math.min(...cells.map((cell) => parseFloat(getComputedStyle(cell).fontSize)));
+    const apply = () => cells.forEach((cell) => { cell.style.fontSize = `${size}px`; });
+    apply();
+    for (let i = 0; i < 30 && size > 8 && cells.some(overflows); i++) {
+      size -= 1;
+      apply();
+    }
   });
 }
 
@@ -447,7 +466,10 @@ async function downloadImage() {
       const canvas = await withTimeout(html2canvas(page, {
         scale,
         backgroundColor: '#ffffff',
-        onclone: (doc) => { doc.getElementById('posters').style.transform = 'none'; },
+        onclone: (doc) => {
+          doc.getElementById('posters').style.transform = 'none';
+          doc.querySelectorAll('.poster').forEach((p) => { p.style.boxShadow = 'none'; });
+        },
       }), 30000);
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
       if (!blob) throw new Error('the image was too big for this browser');

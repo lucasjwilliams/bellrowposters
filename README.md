@@ -8,27 +8,18 @@ Choose which numbers of bells to show, tick the rows you want, rename them or ad
 
 ## How it works
 
-It's a static site with no build step: `index.html`, `style.css` and `app.js`.
+It's a static site with no build step: `index.html`, `style.css` and `app.js`. Open `index.html` straight from disk, or serve the folder with any static server.
 
-The standard rows are listed in `LIBRARY` in `app.js`. Rounds, Queens, Kings, Tittums and Back rounds follow a pattern, so they are worked out for any number of bells; the others are listed for the numbers of bells they exist on:
+The standard rows are listed in `LIBRARY` in `app.js`. Rows that follow a pattern, like Queens, Kings and Tittums, are worked out for any number of bells by a rule in `RULES`; the others are listed for each number of bells:
 
 ```js
-{ name: 'Whittingtons', values: { 6: '125346', 8: '12753468' }, on: true },
+{ name: 'Wrap', values: { 5: '32154', 6: '321654', 7: '3217654', 8: '43218765', 10: '5432109876', 12: '654321TE0987' }, on: true },
 ```
 
 `on: true` ticks the row by default. Rows use `1`–`9`, then `0`, `E` and `T` for the 10th, 11th and 12th.
 
-## Running locally
-
-Opening `index.html` directly works for everything except **Download as image**, which browsers block for local files. Use a local server for that:
-
-```sh
-python3 -m http.server
-```
-
 ## Credits
 
-- Named rows from the [Association of Ringing Teachers](https://ringingteachers.org/resources/Method-Toolboxes/call-change-toolbox).
 - Image export uses [html2canvas](https://html2canvas.hertzen.com/).
 
 The code is released under the [MIT License](LICENSE).
