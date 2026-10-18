@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+  <title>Named Row Posters</title>
+  <meta name="description" content="Make a poster of named call change rows, like Queens and Tittums, for your tower.">
+  <link rel="stylesheet" href="style.css">
+  <style id="page-size">@page { size: A4 portrait; margin: 0; }</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <h1>Named Row Posters</h1>
+    <p>Choose your bells and rows, and make a poster of named call changes for the tower.</p>
+  </header>
+
+  <main class="layout">
+    <section class="controls" aria-label="Poster settings">
+      <div class="step">
+        <h2><span class="num">1</span> Choose your bells</h2>
+        <fieldset class="field stages">
+          <legend>Columns on the poster</legend>
+          <div id="stage-list" class="stage-list"></div>
+        </fieldset>
+      </div>
+
+      <div class="step">
+        <h2><span class="num">2</span> Choose your rows</h2>
+        <div class="rows">
+          <div id="row-head" class="row-item row-head" aria-hidden="true"></div>
+          <div id="row-list" class="row-list"></div>
+        </div>
+        <div class="list-actions">
+          <button id="add-row" type="button" class="link">+ Add a row</button>
+          <button id="reset-rows" type="button" class="link">↺ Reset to the standard rows</button>
+        </div>
+        <p class="muted small">Rows use 1–9, then 0 for the 10th, E for the 11th and T for the 12th. Rows that do not exist on your number of bells are left out of the poster.</p>
+      </div>
+
+      <div class="step">
+        <h2><span class="num">3</span> Style it</h2>
+        <div class="row titles">
+          <label class="field">Title
+            <input id="title" type="text">
+          </label>
+          <label class="field">Subtitle
+            <input id="subtitle" type="text" placeholder="Optional">
+          </label>
+        </div>
+        <div class="row">
+          <label class="field">Page
+            <select id="orientation">
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </label>
+          <label class="field">Split across
+            <select id="pages">
+              <option value="1">1 page</option>
+              <option value="2">2 pages</option>
+              <option value="3">3 pages</option>
+            </select>
+          </label>
+        </div>
+        <div id="page-options" class="checks" hidden>
+          <label><input type="checkbox" id="title-all"> Show title on every page</label>
+          <label><input type="checkbox" id="head-all"> Show table headings on every page</label>
+        </div>
+        <div class="field">Colour
+          <div id="swatches" class="swatches"></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <h2><span class="num">4</span> Export result</h2>
+        <div class="row">
+          <button id="print" type="button" class="primary">Print / Save as PDF</button>
+          <button id="download" type="button">Download as image</button>
+          <button id="share" type="button">Copy share link</button>
+        </div>
+        <div id="share-box" hidden>
+          <input id="share-url" type="text" readonly aria-label="Share link">
+          <p class="muted small">This link opens the poster exactly as it is now, including any rows you've added or renamed.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview" id="preview" aria-label="Poster preview">
+      <div class="preview-head">
+        <h2>Preview</h2>
+        <button type="button" id="preview-close" class="preview-close" aria-label="Close full screen preview">✕</button>
+      </div>
+      <button type="button" id="preview-full" class="preview-full" aria-label="View preview full screen" title="Full screen">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div id="poster-frame" class="poster-frame">
+        <div id="posters" class="posters"></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="changelog" class="changelog">
+    <form method="dialog" class="picker-head">
+      <h2>What's changed</h2>
+      <button type="submit" class="close" aria-label="Close">✕</button>
+    </form>
+    <div id="changelog-list" class="changelog-list"></div>
+  </dialog>
+
+  <footer class="site-footer">
+    Rows: <a href="https://ringingteachers.org/resources/Method-Toolboxes/call-change-toolbox">Association of Ringing Teachers</a>
+    | Developed by: <a href="https://lucasw.uk" target="_blank" rel="noopener">Lucas Williams</a>
+    <button type="button" id="version" class="version link" title="What's changed"></button>
+  </footer>
+</body>
+</html>
