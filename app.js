@@ -84,7 +84,7 @@ function standardRows() {
 }
 
 const DEFAULT_TITLE = 'Named Rows';
-const DEFAULT_STAGES = [6, 8];
+const DEFAULT_STAGES = [];
 
 const state = {
   stages: [...DEFAULT_STAGES],
@@ -138,6 +138,7 @@ function renderStages() {
 
 function renderRowList() {
   const stages = selectedStages();
+  document.querySelectorAll('.needs-bells').forEach((el) => { el.hidden = !stages.length; });
   const cols = `repeat(${Math.max(1, stages.length)}, minmax(0, 1fr))`;
   const head = $('row-head');
   head.style.setProperty('--stage-cols', cols);
