@@ -236,7 +236,15 @@ const SILENCE = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfA
 let audio = null;
 let playing = null;
 
+// iOS safari bug after changing apps
+function dropAudio() {
+  stopIfPlaying();
+  if (audio) audio.close().catch(() => {});
+  audio = null;
+}
+
 function audioContext() {
+  if (audio && (audio.state === 'interrupted' || audio.state === 'closed')) dropAudio();
   if (!audio) {
     if (navigator.audioSession) navigator.audioSession.type = 'playback';
     else {
@@ -623,6 +631,8 @@ function initControls() {
   closeOnBackdrop($('changelog'));
   $('version').addEventListener('click', showChangelog);
   window.addEventListener('resize', fitPreview);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) dropAudio(); });
+  window.addEventListener('pagehide', dropAudio);
   const setFull = (on) => {
     $('preview').classList.toggle('full', on);
     document.body.classList.toggle('no-scroll', on);
