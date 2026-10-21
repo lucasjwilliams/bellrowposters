@@ -2,6 +2,11 @@
 
 const CHANGELOG = [
   {
+    version: '0.2', date: '2026-10-21', changes: [
+      'Listen to any row: press the play button next to it to hear it rung',
+    ],
+  },
+  {
     version: '0.1', date: '2026-10-18', changes: [
       'First version: choose your numbers of bells and rows, rename them or add your own, style the poster, then print, download or share it',
     ],
@@ -137,6 +142,7 @@ function renderStages() {
 }
 
 function renderRowList() {
+  stopIfPlaying();
   const stages = selectedStages();
   document.querySelectorAll('.needs-bells').forEach((el) => { el.hidden = !stages.length; });
   const cols = `repeat(${Math.max(1, stages.length)}, minmax(0, 1fr))`;
@@ -156,9 +162,10 @@ function renderRowList() {
         ${stages.map((n) => {
           const v = row.values[n] || '';
           return `<label class="value"><span class="mini">${n} bells</span>
-            <input type="text" data-stage="${n}" value="${escapeHtml(v)}" maxlength="${n}" placeholder="–" spellcheck="false" autocomplete="off"
+            <span class="value-box"><input type="text" data-stage="${n}" value="${escapeHtml(v)}" maxlength="${n}" placeholder="–" spellcheck="false" autocomplete="off"
               class="${v && !isRow(v, n) ? 'bad' : ''}" aria-label="${label} on ${n} bells"
               title="${v && !isRow(v, n) ? `Not a row on ${n} bells: use each of ${PLACES.slice(0, n)} once` : `${n} bells`}">
+            <button type="button" class="play" data-stage="${n}" ${isRow(v, n) ? '' : 'disabled'} aria-label="Play ${label} on ${n} bells" title="Listen">▶</button></span>
           </label>`;
         }).join('')}
       </div>
@@ -189,8 +196,17 @@ function renderRowList() {
         const bad = v && !isRow(v, n);
         input.classList.toggle('bad', !!bad);
         input.title = bad ? `Not a row on ${n} bells: use each of ${PLACES.slice(0, n)} once` : `${n} bells`;
+        const play = input.nextElementSibling;
+        play.disabled = !isRow(v, n);
+        if (play.disabled && playing?.button === play) playing.stop();
         item.classList.toggle('none', !hasAnyValue(row));
         renderPoster();
+      });
+    });
+    item.querySelectorAll('.play').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        playRow(row.values[+btn.dataset.stage], btn);
       });
     });
     item.querySelector('.remove')?.addEventListener('click', () => {
@@ -211,6 +227,76 @@ function renderRowList() {
       $('row-list').children[j].querySelector('.drag').focus();
     });
   });
+}
+
+const BLOW = 0.26;
+const SEMITONES = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19];
+const PARTIALS = [[0.5, 0.2, 2.6], [1, 0.25, 2], [1.2, 0.15, 1.5], [1.5, 0.1, 1.1], [2, 0.4, 1.3], [2.5, 0.1, 0.8], [3, 0.06, 0.5]];
+const SILENCE = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA';
+let audio = null;
+let playing = null;
+
+function audioContext() {
+  if (!audio) {
+    if (navigator.audioSession) navigator.audioSession.type = 'playback';
+    else {
+      const unlock = new Audio(SILENCE);
+      unlock.setAttribute('playsinline', '');
+      unlock.play().catch(() => {});
+    }
+    audio = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audio.state !== 'running') audio.resume();
+  return audio;
+}
+
+function strike(ctx, out, freq, t) {
+  for (const [ratio, gain, decay] of PARTIALS) {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.frequency.value = freq * ratio;
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+    osc.connect(g).connect(out);
+    osc.start(t);
+    osc.stop(t + decay + 0.05);
+  }
+}
+
+function stopIfPlaying() {
+  if (playing) playing.stop();
+}
+
+function playRow(value, button) {
+  const wasThis = playing?.button === button;
+  stopIfPlaying();
+  if (wasThis) return;
+  const row = [...value].map((c) => PLACES.indexOf(c) + 1);
+  const ctx = audioContext();
+  const out = ctx.createGain();
+  out.gain.value = 0.12;
+  out.connect(ctx.destination);
+  let t = ctx.currentTime + 0.2;
+  for (let i = 0; i < 6; i++) {
+    if (i % 2) t += BLOW;
+    row.forEach((bell) => {
+      strike(ctx, out, 520 * 2 ** (SEMITONES[row.length - bell] / 12), t);
+      t += BLOW;
+    });
+  }
+  button.textContent = '■';
+  button.classList.add('on');
+  const timer = setTimeout(() => playing?.stop(), (t - ctx.currentTime + 0.6) * 1000);
+  playing = {
+    button,
+    stop() {
+      clearTimeout(timer);
+      out.disconnect();
+      button.textContent = '▶';
+      button.classList.remove('on');
+      playing = null;
+    },
+  };
 }
 
 function startDrag(e, item) {
