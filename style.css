@@ -212,7 +212,8 @@ button.link { border: none; background: none; color: var(--accent); padding: 8px
   .row-item:nth-child(even) { background: var(--panel); }
   .row-item .values { grid-column: 2 / 3; display: flex; flex-wrap: wrap; gap: 6px 8px; }
   /* wide enough for the whole row plus the play button */
-  .row-item .value input { width: calc(var(--n) * (1ch + 0.08em) + 40px); min-width: 110px; }
+  .row-item .value input { width: calc(var(--n) * (1ch + 0.08em) + 46px); padding-right: 36px; }
+  .row-item .play { right: 2px; width: 32px; height: calc(100% - 4px); }
   .row-item .mini {
     display: block; margin-bottom: 2px;
     color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
