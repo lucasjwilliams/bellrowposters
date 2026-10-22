@@ -148,7 +148,8 @@ button.link { border: none; background: none; color: var(--accent); padding: 8px
   position: absolute; top: 50%; right: 3px; transform: translateY(-50%);
   width: 20px; height: 22px; padding: 0;
   border: none; border-radius: 4px; background: none;
-  color: var(--accent); font-size: 0.7rem; line-height: 1;
+  display: grid; place-items: center;
+  color: var(--accent);
 }
 .row-item .play:hover:not(:disabled), .row-item .play.on { background: rgba(31, 58, 104, 0.12); }
 .row-item .play:disabled { opacity: 0; pointer-events: none; }
@@ -209,7 +210,9 @@ button.link { border: none; background: none; color: var(--accent); padding: 8px
     border-radius: 10px;
   }
   .row-item:nth-child(even) { background: var(--panel); }
-  .row-item .values { grid-column: 2 / 3; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px 8px; }
+  .row-item .values { grid-column: 2 / 3; display: flex; flex-wrap: wrap; gap: 6px 8px; }
+  /* wide enough for the whole row plus the play button */
+  .row-item .value input { width: calc(var(--n) * (1ch + 0.08em) + 40px); min-width: 110px; }
   .row-item .mini {
     display: block; margin-bottom: 2px;
     color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
@@ -220,7 +223,7 @@ button.link { border: none; background: none; color: var(--accent); padding: 8px
 }
 .row-item .values { display: contents; }
 @container (max-width: 469px) {
-  .row-item .values { display: grid; }
+  .row-item .values { display: flex; }
 }
 
 .row.titles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }

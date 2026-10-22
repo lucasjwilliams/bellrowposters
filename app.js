@@ -161,11 +161,11 @@ function renderRowList() {
       <div class="values">
         ${stages.map((n) => {
           const v = row.values[n] || '';
-          return `<label class="value"><span class="mini">${n} bells</span>
+          return `<label class="value" style="--n:${n}"><span class="mini">${n} bells</span>
             <span class="value-box"><input type="text" data-stage="${n}" value="${escapeHtml(v)}" maxlength="${n}" placeholder="–" spellcheck="false" autocomplete="off"
               class="${v && !isRow(v, n) ? 'bad' : ''}" aria-label="${label} on ${n} bells"
               title="${v && !isRow(v, n) ? `Not a row on ${n} bells: use each of ${PLACES.slice(0, n)} once` : `${n} bells`}">
-            <button type="button" class="play" data-stage="${n}" ${isRow(v, n) ? '' : 'disabled'} aria-label="Play ${label} on ${n} bells" title="Listen">▶</button></span>
+            <button type="button" class="play" data-stage="${n}" ${isRow(v, n) ? '' : 'disabled'} aria-label="Play ${label} on ${n} bells" title="Listen">${PLAY_ICON}</button></span>
           </label>`;
         }).join('')}
       </div>
@@ -233,6 +233,9 @@ const BLOW = 0.26;
 const SEMITONES = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19];
 const PARTIALS = [[0.5, 0.2, 2.6], [1, 0.25, 2], [1.2, 0.15, 1.5], [1.5, 0.1, 1.1], [2, 0.4, 1.3], [2.5, 0.1, 0.8], [3, 0.06, 0.5]];
 const SILENCE = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA';
+// SVG rather than ▶/■, which iOS draws as emoji
+const PLAY_ICON = '<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="M2 1v8l7-4z" fill="currentColor"/></svg>';
+const STOP_ICON = '<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><rect x="2" y="2" width="6" height="6" fill="currentColor"/></svg>';
 let audio = null;
 let playing = null;
 
@@ -292,7 +295,7 @@ function playRow(value, button) {
       t += BLOW;
     });
   }
-  button.textContent = '■';
+  button.innerHTML = STOP_ICON;
   button.classList.add('on');
   const timer = setTimeout(() => playing?.stop(), (t - ctx.currentTime + 0.6) * 1000);
   playing = {
@@ -300,7 +303,7 @@ function playRow(value, button) {
     stop() {
       clearTimeout(timer);
       out.disconnect();
-      button.textContent = '▶';
+      button.innerHTML = PLAY_ICON;
       button.classList.remove('on');
       playing = null;
     },
